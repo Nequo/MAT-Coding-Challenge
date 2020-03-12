@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import time
 
+import jhelpers
 broker_address = "127.0.0.1"
 
 
@@ -21,5 +22,12 @@ except:
     exit(1)
 
 client.loop_start()
+carStat = jhelpers.gen_carStatus(1556897265, 1, "POSITION", 2)
+client.publish("carStatus", carStat)
+carStat = jhelpers.gen_carStatus(1556897265, 1, "SPEED", 210)
+client.publish("carStatus", carStat)
+event = jhelpers.gen_event(1556897265, "Car 2 activated their DRS!")
+client.publish("events", event)
+event 
 time.sleep(4)
 client.loop_stop()
