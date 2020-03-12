@@ -1,9 +1,0 @@
-#+TITLE: MAT challenge backend application
-
-* Usage
-Make sure that you have docker-compose running properly as it is described in
-the repository's [[file:~/MAT-Coding-Challenge/README.md][README file]].
-I used pipenv to manage the python environment. Instructions for installing are
-[[https://github.com/pypa/pipenv][here]]. Run `pipenv install` from the project's main directory. This will install
-all the necessary packages from  the provided Pipfile. Now you can run `pipenv
-run python src/backend.py` which will run the application.
