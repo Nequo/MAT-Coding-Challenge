@@ -7,3 +7,12 @@ I used pipenv to manage the python environment. Instructions for installing are
 [[https://github.com/pypa/pipenv][here]]. Run `pipenv install` from the project's main directory. This will install
 all the necessary packages from  the provided Pipfile. Now you can run `pipenv
 run python src/backend.py` which will run the application.
+* Methodology
+I was first thinking of representing the track as a set of points on a curve,
+and then estimating the nearest point. I first got a sample of track points by
+getting all the json data for a single car for 1min40 seconds which I estimated
+was the time it took for a lap to complete. I ended up dropping this path as I
+learned about [[http://pointclouds.org/documentation/tutorials/kdtree_search.php][KDTrees]] but I got a nice graph of the circuit that I thought I
+would include :). I used [[https://stackoverflow.com/questions/31464345/fitting-a-closed-curve-to-a-set-of-points][this]] as my source to get a visualisation. The code can
+be found in the source code file src/track_gen.py.
+#+html: <p align="center"><img src="../track.png/" /></p>
