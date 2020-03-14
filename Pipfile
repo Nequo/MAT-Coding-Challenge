@@ -5,8 +5,12 @@ name = "pypi"
 
 [packages]
 paho-mqtt = "*"
+scipy = "*"
 
 [dev-packages]
+matplotlib = "*"
+numpy = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.7"
