@@ -67,10 +67,21 @@ def closest_sector(track_kdtree, lat, longitude):
 
     return sector
 
-def car_position(carIndex, car_sector, car_laps):
+def car_position(carIndex, car_sectors, car_laps):
+    """ 
+    Get the car's position in a race
+    
+    Parameters: 
+    carIndex (int): The number of the car
+    car_sectors ([int]): latest car sector per car sorted by carIndex
+    car_laps ([int]): latest car laps per car sorted by carIndex
+
+    Returns: 
+    int: position of the car in the race
+    """
     car_sector_and_lap = [0] * 6
     # calculate all cars' positions
-    for i in range(len(car_sector)):
+    for i in range(len(car_sectors)):
         car_sector_and_lap[i] = car_laps[i] * 1000 + car_sector[i] 
     print(car_sector_and_lap)
     # Sort the cars so that car at index 0 is the first car in the race
