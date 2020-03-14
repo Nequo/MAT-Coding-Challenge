@@ -1,4 +1,5 @@
 import json
+import geopy
 
 def gen_carCoordinates(message):
     json_msg = json.loads(message)
@@ -80,12 +81,32 @@ def car_position(carIndex, car_sectors, car_laps):
     int: position of the car in the race
     """
     car_sector_and_lap = [0] * 6
-    # calculate all cars' positions
+    # calculate all cars' total positions
     for i in range(len(car_sectors)):
-        car_sector_and_lap[i] = car_laps[i] * 1000 + car_sector[i] 
+        car_sector_and_lap[i] = car_laps[i] * 1000 + car_sectors[i] 
     print(car_sector_and_lap)
     # Sort the cars so that car at index 0 is the first car in the race
     sorted_cars = [i[0] for i in sorted(enumerate(car_sector_and_lap), key=lambda x:x[1])]
     sorted_cars.reverse()
     return sorted_cars.index(carIndex)
 
+def car_speed(time_loc, prev_time_loc):
+    """ 
+    Get the car's speed between 2 points in time
+    
+    Parameters: 
+    time_loc (int, int, int): a timestamp in ms epoch, a latitude and a longitude
+    prev_time_loc (int, int, int): 
+
+    Returns: 
+    int: position of the car in the race
+    """
+    timestamp, lat, longitude = time_loc
+    prev_timestamp, prev_lat, prev_longitude = prev_time_loc
+
+    dist = geopy.distance.distance((lat, longitude), (prev_lat, prev_longitude)).miles
+    # Time difference in milliseconds
+    time_diff = timestamp - prev_timestamp
+    speed = (dist/time_diff) * 3600000
+
+    return speed
