@@ -84,7 +84,6 @@ def car_position(carIndex, car_sectors, car_laps):
     # calculate all cars' total positions
     for i in range(len(car_sectors)):
         car_sector_and_lap[i] = car_laps[i] * 1000 + car_sectors[i] 
-    print(car_sector_and_lap)
     # Sort the cars so that car at index 0 is the first car in the race
     sorted_cars = [i[0] for i in sorted(enumerate(car_sector_and_lap), key=lambda x:x[1])]
     sorted_cars.reverse()
