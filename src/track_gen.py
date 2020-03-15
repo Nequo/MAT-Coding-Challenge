@@ -3,7 +3,7 @@ import numpy as np
 from scipy.interpolate import splprep, splev
 import matplotlib.pyplot as plt
 
-data = list(csv.reader(open("./lap.csv"), quoting=csv.QUOTE_NONNUMERIC))
+data = list(csv.reader(open("./track.csv"), quoting=csv.QUOTE_NONNUMERIC))
 
 pts = np.asarray(data)
 
