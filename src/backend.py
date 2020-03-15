@@ -21,30 +21,40 @@ car_laps = [0] * 6
 lap_counted = [0] * 6 # This is needed because sometimes cars can have sector 0 as the closest for 2 consecutive measurements
 car_sectors = [0] * 6
 car_locations = [(start_time,52.07400735591073,-1.020686454699684)] * 6
-lap_starts = [start_time] * 6
+lap_starts = [0] * 6
 fastest_lap = 100000000000000
-
 
 def on_connect(client, userdata, flags, rc):
     client.subscribe("carCoordinates")
 
 
 def on_message(client, userdata, message):
+    global fastest_lap
     recv_string = str(message.payload.decode("utf-8"))
     carIndex, lat, longitude, timestamp = helpers.gen_carCoordinates(recv_string)
     car_sectors[carIndex] = helpers.closest_sector(track_tree, lat, longitude)
     # Add a lap every time a car passes sectors 0 or 1
-    # TODO: Need to check what sector value to use, maybe retake track measurements
+    # We need the second check in case it approximates to the same sector twice in a row
     if car_sectors[carIndex] in [0, 1] and lap_counted[carIndex] == 0:
-        msg = drivers[carIndex] + " in car " + str(carIndex) + " just completed lap " + str(car_laps[carIndex])
+        msg = "{} in car {} just completed lap {}".format(drivers[carIndex],
+                                                          carIndex,car_laps[carIndex])
         event = helpers.gen_event(timestamp, msg)
         client.publish("events", event)
         lap_counted[carIndex] = 1
         car_laps[carIndex] += 1
+
         lap_time = timestamp - lap_starts[carIndex]
         lap_starts[carIndex] = timestamp
+        if lap_time < fastest_lap:
+            fastest_lap = lap_time
+            minutes, seconds, milliseconds = helpers.ms_to_time(fastest_lap)
+            msg = "{} in car {} sets the fastest lap in {}:{}.{}".format(drivers[carIndex],
+                                                                         carIndex,
+                                                                         minutes,seconds,milliseconds)
+            event = helpers.gen_event(timestamp, msg)
+            client.publish("events", event)
 
-    # Now the car has passed sector 0 so lap won't be counted twice
+    # Here we just reset the flag so that next lap will be counted
     if car_sectors[carIndex] >= 2 and car_sectors[carIndex] <=10:
         lap_counted[carIndex] = 0
 

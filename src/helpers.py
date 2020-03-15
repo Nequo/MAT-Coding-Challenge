@@ -109,3 +109,11 @@ def car_speed(time_loc, prev_time_loc):
     speed = (dist/time_diff) * 3600000
 
     return speed
+
+def ms_to_time(ms):
+    """Converts a time in milliseconds to minutes, seconds and milliseconds"""
+    milliseconds = int(ms % 1000)
+    seconds = int((ms / 1000) % 60)
+    minutes = int(((ms / 1000 - seconds) / 60) % 60)
+
+    return (minutes, seconds, milliseconds)
