@@ -98,7 +98,7 @@ def car_speed(time_loc, prev_time_loc):
     prev_time_loc (int, int, int): 
 
     Returns: 
-    int: position of the car in the race
+    int: speed of the car in miles per hour
     """
     timestamp, lat, longitude = time_loc
     prev_timestamp, prev_lat, prev_longitude = prev_time_loc
