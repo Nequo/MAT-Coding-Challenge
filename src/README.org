@@ -3,10 +3,31 @@
 * Usage
 Make sure that you have docker-compose running properly as it is described in
 the repository's [[https://github.com/Nequo/MAT-Coding-Challenge/blob/master/README.md][README file]] .
+** Dockerised
+I added a service to the docker-compose file for the app to run with the rest of
+the components. The dockerfile is in the root of this repository. Just run
+docker-compose up -d and go to localhost:8084 in your browser. Note that this
+will have to build the docker image the first time you run it. If you need to
+rebuild the image, use docker-compose up --build.
+** Standalone
+If you want to run this as a stand-alone app, you need to remove the
+declaration for the producer in the docker-compose.yml file.
+#+BEGIN_SRC yaml
+producer:
+        build: .
+        links:
+                - broker
+#+END_SRC
 I used pipenv to manage the python environment. Instructions for installing are
 [[https://github.com/pypa/pipenv][here]]. Run `pipenv install` from the project's main directory. This will install
-all the necessary packages from  the provided Pipfile. Now you can run `pipenv
+all the necessary packages from  the provided Pipfile. Then run docker-compose
+up -d. Now you can run `pipenv
 run python src/backend.py` which will run the application.
+** Tests
+I have a few tests for the helper functions that I wrote just to make sure they
+produce what I expect. To run the tests you should install pytest and then run
+`pytest test_helpers.py` from the src/ directory. If you use pipenv, use `pipenv
+install pytest` and `pipenv run pytest test_helpers.py`.
 * Methodology
 I was first thinking of representing the track as a set of points on a curve,
 and then estimating the nearest point. I got a sample of track points by

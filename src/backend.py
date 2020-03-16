@@ -2,7 +2,8 @@ import paho.mqtt.client as mqtt
 from race import Race
 import helpers
 
-broker_address = "127.0.0.1"
+# set this to 127.0.0.1 if running independantly from the docker-compose up
+broker_address = "broker"
 race = Race(6)
 
 def on_connect(client, userdata, flags, rc):
@@ -32,7 +33,7 @@ client.on_message = on_message
 client.on_connect = on_connect
 
 try:
-    client.connect(broker_address)
+    client.connect(broker_address, 1883)
 except:
     print("Could not connect to broker, are you sure you ran docker-compose up?")
     exit(1)
