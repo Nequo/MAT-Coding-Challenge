@@ -14,14 +14,16 @@ broker_address = "127.0.0.1"
 data = list(csv.reader(open("./track.csv"), quoting=csv.QUOTE_NONNUMERIC))
 # Generate the tree only once
 track_tree = spatial.KDTree(data)
+car_updates = 0 # tracks how many messages we received so that we can execute things every 6th message
 
 drivers = ["Lando Norris", "Carlos Sainz", "Max Verstappen", "Daniel Ricciardo", "Charles Leclerc", "Esteban Ocon"]
 start_time = int(round(time.time() * 1000))
-car_laps = [0] * 6
+
+car_laps = [0] * 6 # Total laps done per car
 lap_counted = [0] * 6 # This is needed because sometimes cars can have sector 0 as the closest for 2 consecutive measurements
-car_sectors = [0] * 6
-car_locations = [(start_time,52.07400735591073,-1.020686454699684)] * 6
-lap_starts = [0] * 6
+car_sectors = [0] * 6 # Which sector a car is on
+car_locations = [(start_time,52.07400735591073,-1.020686454699684)] * 6 # Initialise locations at sector 1
+lap_starts = [0] * 6 # Timestamp for the start of a car's lap
 fastest_lap = 100000000000000
 
 def on_connect(client, userdata, flags, rc):
@@ -55,12 +57,16 @@ def on_message(client, userdata, message):
             client.publish("events", event)
 
     # Here we just reset the flag so that next lap will be counted
-    if car_sectors[carIndex] >= 2 and car_sectors[carIndex] <=10:
+    if car_sectors[carIndex] >= 2 and car_sectors[carIndex] <=4:
         lap_counted[carIndex] = 0
 
-    pos = helpers.car_position(carIndex, car_sectors, car_laps)
-    carPos = helpers.gen_carStatus(timestamp, carIndex , "POSITION", pos)
-    client.publish("carStatus", carPos)
+    # Only update positions if we recieve every car's data
+    if car_updates % 6 == 0:
+        pos = helpers.car_positions(car_sectors, car_laps)
+        print(pos)
+        for i in range(6):
+            carPos = helpers.gen_carStatus(timestamp, i , "POSITION", pos.index(i) + 1)
+            client.publish("carStatus", carPos)
 
     new_location = (timestamp, lat, longitude)
     speed = helpers.car_speed(new_location, car_locations[carIndex])
