@@ -10,6 +10,8 @@ docker-compose up -d and go to localhost:8084 in your browser. Note that this
 will have to build the docker image the first time you run it. If you need to
 rebuild the image, use docker-compose up --build.
 ** Standalone
+This is the recommended way to run the app for development so that you don't
+have to rebuild the docker container every time you implement a change.
 If you want to run this as a stand-alone app, you need to remove the
 declaration for the producer in the docker-compose.yml file.
 #+BEGIN_SRC yaml
@@ -18,19 +20,25 @@ producer:
         links:
                 - broker
 #+END_SRC
+You also need to change the address of the broker in backend.py to "127.0.0.1"
 I used pipenv to manage the python environment. Instructions for installing are
 [[https://github.com/pypa/pipenv][here]]. Run `pipenv install` from the project's main directory. This will install
 all the necessary packages from  the provided Pipfile. Then run docker-compose
 up -d. Now you can run `pipenv
 run python src/backend.py` which will run the application.
+One caveat of managing my virtualenvs with pipenv is that I opted for using a
+requirements.txt file in the dockerfile since I don't need a virtualenv. This
+means you need to update requirements.txt independantly of the Pipfile if you do
+add libraries.
 ** Tests
 I have a few tests for the helper functions that I wrote just to make sure they
 produce what I expect. To run the tests you should install pytest and then run
-`pytest test_helpers.py` from the src/ directory. If you use pipenv, use `pipenv
+`pytest src/test_helpers.py` from the project's root directory. If you use pipenv, use `pipenv
 install pytest` and `pipenv run pytest test_helpers.py`.
 * Methodology
+** Positions on track
 I was first thinking of representing the track as a set of points on a curve,
-and then estimating the nearest point. I got a sample of track points by
+and then estimating a measurement to its nearest point on that curve. I got a sample of track points by
 getting all the json data for a single car for 1min40 seconds which I estimated
 was the time it took for a lap to complete. I then saved the data into a csv
 file that can be found at the root of this repo. I ended up dropping this path as I
@@ -39,24 +47,44 @@ would include :). I used [[https://stackoverflow.com/questions/31464345/fitting-
 be found in the source code file track_gen.py.
 #+html: <p align="center"><img src="../track.png/" /></p>
 
-** The KDTree approach for getting a position
+*** The KDTree approach for getting a position
 I then was debating using a time-sorted array of approximated coordinates
 and iterate through it on each measurement to find the closest point to a
 measurement. This seemed very slow so I researched a better way to do it. This
 led me to learn about KDTrees which are an efficient data structure for
 finding nearest neighbors to a given point from a list of coordinates. Remember that our track
 coordinates were taken from a single car and hence we have a list of consecutive
-points on track. By getting the index of the closest of these points to a given
-car position measurement, we can estimate the position on track of a car. We
-will call these indexes sectors. In addition, we have to keep track of how many
-laps were done in total so we add 1 to the total number of laps for a car when
-it passes sector 1. Note that restarting the backend could create a disruption
-as all state is lost upon shutting down and lap numbers will be forgotten. Even
-if we saved any state, if the backend was off for long enough it would become
-obsolete hence why I decided to keep this as is.
+points on track that we know occur in a certain order. I managed to get 455 of
+these coordinates. By getting the index of the closest of the coordinates to a
+given car position measurement, we can estimate the position on track of a car
+as a value from 0 to 454. We will call these indexes sectors. In addition, we
+have to keep track of how many laps were done in total so we add 1 to the total
+number of laps for a car when it passes sectors 0 or 1. This is done because I
+noticed that sometimes 2 consecutive car measurements could approximate to
+sectors 454 then 1 thus skipping sector 0. Once we have all of this in place we
+can get the positions of all cars by sorting them in order of laps*1000 and
+sectors. Note that restarting the backend could create a disruption as all state
+is lost upon shutting down and lap numbers will be forgotten. Even if we saved
+any state, if the backend was off for long enough it would become obsolete hence
+why I decided to not save any state.
 ** Getting the speed of a car
 In order to get the speed of a car, we can calculate the distance between 2
 consecutive measurements that we get for a car. I used the geopy library for
 this as it provides accurate measurements when provided with latitude and
 longitude coordinates. We can then divide the distance by the difference in
-the times at which the measurements were taken.
+the times at which the measurements were taken to get the speed.
+** Lap events
+I decided to show events for when a driver crosses the start line indicating
+what lap they are on. I also record the fastest lap and display a message when
+the time is improved showing which driver holds the record. Note that again if
+you start the backend after the simulation itself, the first lap will show very
+short times for the fastest lap which would not get overriden. Given that I
+integrated the backend as a docker component, I didn't think it was necessary to
+void the first lap's times as I would have done if it were running separately.
+** Overtakes
+The last type of event that I implemented was overtakes. I keep a record of the
+last "stable" positions meaning when the driver positions are not fluctuating.
+These only change if the live measurement using my positioning function differs
+from the stable state and the car that ends up in front is at least 3 sectors
+in front of the car it has overtaken. I did this to avoid a constant stream of
+overtake messages.
