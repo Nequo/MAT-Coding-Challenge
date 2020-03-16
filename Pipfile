@@ -13,6 +13,7 @@ matplotlib = "*"
 numpy = "*"
 scipy = "*"
 geopy = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.7"
