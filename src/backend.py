@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 from race import Race
 import helpers
 
-# set this to 127.0.0.1 if running independantly from the docker-compose up
+# set this to 127.0.0.1 if running independantly from the docker-compose up, set to broker if not
 broker_address = "broker"
 race = Race(6)
 
@@ -26,6 +26,10 @@ def on_message(client, userdata, message):
         
     speed = race.update_speed(carIndex, timestamp, lat, longitude)
     client.publish("carStatus", speed)
+
+    overtakes = race.check_overtakes(timestamp)
+    for overtake in overtakes:
+        client.publish("events", overtake)
 
 
 client = mqtt.Client("Positions")
